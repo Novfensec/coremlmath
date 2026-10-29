@@ -1,6 +1,6 @@
 # coremlmath
 
-A high-performance C++ backend for Machine Learning math in Python.
+Multithreaded C++ backend for Machine Learning Math.
 
 > [!NOTE]
 > This library uses OpenMP to bypass the Python GIL and multithread calculations across all available CPU cores.
