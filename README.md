@@ -1,4 +1,4 @@
-# coremlmath
+# CoreMLMath
 
 Multithreaded C++ backend for Machine Learning Math.
 
