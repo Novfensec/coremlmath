@@ -20,7 +20,7 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
 - Clone the repo locally:
 
     ```sh
-    git clone https://github.com/novfensec/coremlmath -b main --single-branch --depth 1
+    git clone https://github.com/novfensec/coremlmath -b master --single-branch --depth 1
     cd coremlmath
     ```
 
