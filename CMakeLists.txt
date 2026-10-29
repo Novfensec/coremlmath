@@ -7,7 +7,7 @@ find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 
-pybind11_add_module(_cmlmath src/cmlmath/cmlmath.cpp)
+pybind11_add_module(_cmlmath src/cpp/cmlmath.cpp)
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
