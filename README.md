@@ -77,7 +77,7 @@ y_raw = np.random.randint(0, 16, size=(1000000,), dtype=np.int32)
 
 # Enforce C-contiguous (Row-Major) layout in memory. 
 # (np.random generates C-contiguous arrays by default, but this guarantees 
-# safety if you ever swap the data source out for a Pandas DataFrame or transposed array).
+# safety in case of Pandas DataFrame or transposed array).
 X = np.ascontiguousarray(X_raw, dtype=np.int32)
 y = np.ascontiguousarray(y_raw, dtype=np.int32)
 
