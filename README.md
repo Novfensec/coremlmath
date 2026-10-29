@@ -42,7 +42,7 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
 
 - Install pybind11:
     ```sh
-    pip install "pybind11[global]"
+    pip install "pybind11[global]" uv
     ```
 
 - Build and install using standard pip:
@@ -55,6 +55,11 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
 
     ```sh
     uv pip install .
+    ```
+
+- Build an installable wheel:
+    ```sh
+    uv build --wheel
     ```
 
 ## Usage
