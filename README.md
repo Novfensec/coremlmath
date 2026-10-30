@@ -1,11 +1,13 @@
 # CoreMLMath
 
-Multithreaded C++ backend for Machine Learning Math.
+[![PyPI version](https://img.shields.io/pypi/v/coremlmath.svg)](https://pypi.org/project/coremlmath/)
+[![Python versions](https://img.shields.io/pypi/pyversions/coremlmath.svg)](https://pypi.org/project/coremlmath/)
+[![License](https://img.shields.io/github/license/novfensec/coremlmath.svg)](https://github.com/novfensec/coremlmath/blob/master/LICENSE)
+
+A multithreaded C++ backend for Machine Learning Math. 
 
 > [!NOTE]
-> This library uses OpenMP to bypass the Python GIL and multithread calculations across all available CPU cores.
-
-Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing in this world.
+> This library uses OpenMP to bypass the Python GIL and multithread calculations across all available CPU cores. Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing in this world.
 
 ## Financial Support
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/Novfensec?style=for-the-badge&label=Sponsor%20Novfensec&logo=github&color=000000)](https://github.com/sponsors/Novfensec)
@@ -14,6 +16,17 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate%20via-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/KARTAVYASHUKLA)
 
+
+## Installation
+
+The easiest way to install CoreMLMath is via pip.
+
+> [!TIP]
+> The package is installed as `coremlmath` but imported as `cmlmath`.
+
+```sh
+pip install coremlmath
+```
 
 ## Build Instructions
 
@@ -74,6 +87,13 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
     cibuildwheel --platform android
     ```
 
+
+- Build Windows wheels locally using cibuildwheel (requires MSVC):
+    ```sh
+    pip install cibuildwheel
+    cibuildwheel --platform windows
+    ```
+
 The repository also includes GitHub Actions workflows under `.github/workflows/` (targeting Python 3.11 through 3.14):
 - `wheels-linux.yml`: Compiles `manylinux_2_28` wheels for `x86_64` and `aarch64` (via QEMU) on Ubuntu runners.
 - `wheels-android.yml`: Compiles PEP 738 Android wheels for `arm64_v8a` and `x86_64` on Ubuntu runners.
@@ -109,4 +129,51 @@ calc_time = time.time() - start
 print(f"Calculated 500 Information and Gini Gains in {calc_time:.4f} seconds.")
 print(f"Best feature index to split on (Information Gain): {np.argmax(info_gains)}")
 print(f"Best feature index to split on (Gini Gain): {np.argmax(gini_gains)}")
+```
+
+### Decision Tree Classifier
+
+`coremlmath` includes a full, scikit-learn compatible `DecisionTreeClassifier` powered directly by the multithreaded OpenMP C++ backend:
+
+<details>
+<summary>Showcase</summary>
+
+![entropytree](./examples/decision_tree_entropy.png)
+![ginitree](./examples/decision_tree_gini.png)
+
+</details>
+
+```python
+from cmlmath import DecisionTreeClassifier
+
+# Initialize classifier (supports criterion="entropy" or "gini")
+clf = DecisionTreeClassifier(
+    criterion="entropy",
+    max_depth=5,
+    min_samples_split=2,
+    min_samples_leaf=1,
+)
+
+# Fit on training data (supports NumPy arrays and Pandas DataFrames)
+clf.fit(X_train, y_train)
+
+# Inference and accuracy evaluation
+y_pred = clf.predict(X_test)
+accuracy = clf.score(X_test, y_test)
+probas = clf.predict_proba(X_test)
+
+# Inspect tree structure & feature contributions
+clf.print_tree()
+print("Feature importances:", clf.feature_importances_)
+
+# Plot tree using matplotlib (or save directly to image)
+clf.plot_tree(save_path="decision_tree.png")
+
+# Or using the functional plot_tree API
+from cmlmath import plot_tree
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(16, 9))
+plot_tree(clf, ax=ax, filled=True, rounded=True)
+plt.show()
 ```

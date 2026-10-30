@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "coremlmath"
-version = "0.1.0"
+version = "0.2.0"
 description = "A multithreaded C++ backend for high-performance Machine Learning Math"
 readme = "README.md"
 license = { file = "LICENSE" }
