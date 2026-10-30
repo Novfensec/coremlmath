@@ -49,3 +49,18 @@ cmake.version = ">=3.15"
 ninja.version = ">=1.5"
 wheel.install-dir = "cmlmath"
 wheel.packages = ["src/cmlmath"]
+
+[tool.cibuildwheel]
+build = "cp313-*"
+build-frontend = "build"
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+archs = ["x86_64", "aarch64"]
+test-command = "python -c \"import cmlmath; print('Cores:', cmlmath.get_cpu_cores())\""
+test-skip = ["*_aarch64"]
+
+[tool.cibuildwheel.android]
+archs = ["arm64_v8a", "x86_64"]
+test-skip = ["*"]

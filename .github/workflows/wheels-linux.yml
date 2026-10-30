@@ -1,0 +1,52 @@
+name: Build Linux Wheels
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_linux_wheels:
+    name: Linux (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for non-x86_64 architectures)
+        if: matrix.arch != 'x86_64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build Linux wheels via cibuildwheel
+        uses: pypa/cibuildwheel@v4.3.5
+        env:
+          CIBW_PLATFORM: linux
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+          CIBW_BUILD: "cp313-*"
+          CIBW_TEST_COMMAND: "python -c \"import cmlmath; print('Cores:', cmlmath.get_cpu_cores())\""
+          CIBW_TEST_SKIP: "*_aarch64"
+
+      - name: Upload Linux wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coremlmath-linux-${{ matrix.arch }}
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error

@@ -1,0 +1,60 @@
+name: Build Android Wheels
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_android_wheels:
+    name: Android (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64_v8a, x86_64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+
+      - name: Build Android wheels via cibuildwheel
+        uses: pypa/cibuildwheel@v4.3.5
+        env:
+          CIBW_PLATFORM: android
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_BUILD: "cp313-*"
+          CIBW_TEST_SKIP: "*"
+          ANDROID_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}
+
+      - name: Upload Android wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coremlmath-android-${{ matrix.arch }}
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
