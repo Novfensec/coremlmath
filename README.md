@@ -62,6 +62,23 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
     uv build --wheel
     ```
 
+- Build Linux wheels locally using cibuildwheel:
+    ```sh
+    pip install cibuildwheel
+    cibuildwheel --platform linux
+    ```
+
+- Build Android wheels locally using cibuildwheel (requires Android SDK):
+    ```sh
+    pip install cibuildwheel
+    cibuildwheel --platform android
+    ```
+
+The repository also includes GitHub Actions workflows under `.github/workflows/`:
+- `wheels-linux.yml`: Compiles `manylinux_2_28` wheels for `x86_64` and `aarch64` (via QEMU) on Ubuntu runners.
+- `wheels-android.yml`: Compiles PEP 738 Android wheels for `arm64_v8a` and `x86_64` on Ubuntu runners.
+
+
 ## Usage
 
 The package expects 2D and 1D NumPy arrays of integers for maximum memory efficiency.
