@@ -1,0 +1,175 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build_sdist:
+    name: Build source distribution (sdist)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tool
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+
+      - name: Build sdist
+        run: python -m build --sdist
+
+      - name: Upload sdist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coremlmath-sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  build_linux_wheels:
+    name: Linux (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for non-x86_64 architectures)
+        if: matrix.arch != 'x86_64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build Linux wheels via cibuildwheel
+        uses: pypa/cibuildwheel@v4.3.5
+        env:
+          CIBW_PLATFORM: linux
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
+          CIBW_ENABLE: "cpython-prerelease"
+          CIBW_SKIP: "cp31*t-*"
+          CIBW_TEST_COMMAND: "python -c \"import cmlmath; print('Cores:', cmlmath.get_cpu_cores())\""
+          CIBW_TEST_SKIP: "*_aarch64"
+
+      - name: Upload Linux wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coremlmath-linux-${{ matrix.arch }}
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  build_android_wheels:
+    name: Android (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64_v8a, x86_64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+
+      - name: Build Android wheels via cibuildwheel
+        uses: pypa/cibuildwheel@v4.3.5
+        env:
+          CIBW_PLATFORM: android
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
+          CIBW_ENABLE: "cpython-prerelease"
+          CIBW_SKIP: "cp31*t-*"
+          CIBW_TEST_SKIP: "*"
+          ANDROID_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}
+
+      - name: Upload Android wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coremlmath-android-${{ matrix.arch }}
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  build_windows_wheels:
+    name: Windows (x86_64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build Windows wheels via cibuildwheel
+        uses: pypa/cibuildwheel@v4.3.5
+        env:
+          CIBW_PLATFORM: windows
+          CIBW_ARCHS: AMD64
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
+          CIBW_ENABLE: "cpython-prerelease"
+          CIBW_SKIP: "cp31*t-*"
+          CIBW_TEST_COMMAND: "python -c \"import cmlmath; print('Cores:', cmlmath.get_cpu_cores())\""
+
+      - name: Upload Windows wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coremlmath-windows-x86_64
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  publish_to_pypi:
+    name: Publish package to PyPI
+    needs:
+      - build_sdist
+      - build_linux_wheels
+      - build_android_wheels
+      - build_windows_wheels
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/coremlmath
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download all built distributions
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List distributions to publish
+        run: ls -la dist/
+
+      - name: Publish distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true

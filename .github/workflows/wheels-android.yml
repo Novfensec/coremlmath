@@ -48,9 +48,12 @@ jobs:
         env:
           CIBW_PLATFORM: android
           CIBW_ARCHS: ${{ matrix.arch }}
-          CIBW_BUILD: "cp313-*"
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
+          CIBW_ENABLE: "cpython-prerelease"
+          CIBW_SKIP: "cp31*t-*"
           CIBW_TEST_SKIP: "*"
           ANDROID_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}
+
 
       - name: Upload Android wheel artifacts
         uses: actions/upload-artifact@v4

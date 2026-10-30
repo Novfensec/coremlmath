@@ -74,10 +74,10 @@ Thanks to [pybind11](https://github.com/pybind/pybind11) and OpenMP for existing
     cibuildwheel --platform android
     ```
 
-The repository also includes GitHub Actions workflows under `.github/workflows/`:
+The repository also includes GitHub Actions workflows under `.github/workflows/` (targeting Python 3.11 through 3.14):
 - `wheels-linux.yml`: Compiles `manylinux_2_28` wheels for `x86_64` and `aarch64` (via QEMU) on Ubuntu runners.
 - `wheels-android.yml`: Compiles PEP 738 Android wheels for `arm64_v8a` and `x86_64` on Ubuntu runners.
-
+- `publish.yml`: Triggered upon GitHub Release creation (or manual dispatch); builds `sdist`, Linux (`x86_64`, `aarch64`), Android (`arm64_v8a`, `x86_64`), and Windows (`x86_64`) wheels, then automatically publishes them to PyPI using PyPA Trusted Publishing (OIDC).
 
 ## Usage
 

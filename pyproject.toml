@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core", "pybind11"]
+requires = ["scikit-build-core>=0.10.0", "pybind11>=2.13.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -11,7 +11,7 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Kartavya Shukla", email = "kartavyashuklahardoi@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = ["numpy"]
 keywords = [
     "machine-learning",
@@ -32,7 +32,10 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX", 
     "Programming Language :: C++",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -51,8 +54,10 @@ wheel.install-dir = "cmlmath"
 wheel.packages = ["src/cmlmath"]
 
 [tool.cibuildwheel]
-build = "cp313-*"
+build = "cp311-* cp312-* cp313-* cp314-*"
 build-frontend = "build"
+enable = ["cpython-prerelease"]
+skip = ["cp31*t-*"]
 
 [tool.cibuildwheel.linux]
 manylinux-x86_64-image = "manylinux_2_28"
@@ -64,3 +69,7 @@ test-skip = ["*_aarch64"]
 [tool.cibuildwheel.android]
 archs = ["arm64_v8a", "x86_64"]
 test-skip = ["*"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+test-command = "python -c \"import cmlmath; print('Cores:', cmlmath.get_cpu_cores())\""
